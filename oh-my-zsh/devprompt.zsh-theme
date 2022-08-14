@@ -180,7 +180,7 @@ is_ssh(){
   if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
     RET="";
     RET=${RET}`prompt_end`
-    RET=${RET}"[📠  %{$fg_bold[magenta]%}%n%{$fg_bold[blue]%}@%{$fg_bold[magenta]%}%m%{${reset_color}%}"
+    RET=${RET}"[📠 %{$fg_bold[magenta]%}%n%{$fg_bold[blue]%}@%{$fg_bold[magenta]%}%m%{${reset_color}%}"
     RET=${RET}' ]'
     echo ${RET}
   else
