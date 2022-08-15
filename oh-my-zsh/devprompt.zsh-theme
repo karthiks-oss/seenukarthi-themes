@@ -5,7 +5,7 @@ local return_code="%(?.%{$fg[green]%}% ✔%{$reset_color%}.%{$fg[red]%}%? ✘%{$
 my_dev_prompt_info() {
 
     local no_dev_prompt=${NO_DEV_PROMPT:-false}
-    local VER_REGEX='[0-9]+\.[0-9]+\.[0-9]+'
+    local VER_REGEX='[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+'
 
     if [ "${no_dev_prompt}" = "true" ] || [ "${HOME}" = "${PWD}" ]; then
       return
@@ -56,6 +56,16 @@ my_dev_prompt_info() {
         i=$((i+1))
       fi
     fi 
+
+    if [ -f "build.xml" ]; then
+      java_found="true"
+      if [ -x "$(command -v ant)" ]
+      then
+        DEV_TOOLS_VERSION=`ant -version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
+        DEV_TOOLS[i]="$(prase_version_info Ant ${DEV_TOOLS_VERSION})"
+        i=$((i+1))
+      fi
+    fi
 
     files=""
     files=$(find ${PWD} \( -name "*.java" \)  -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
@@ -122,14 +132,14 @@ my_dev_prompt_info() {
       local cc_exe=${CC:-gcc}
       if [ -x "$(command -v ${cc_exe})" ]; then
         CC_VERSION=`${cc_exe} --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
-        CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | egrep -o 'Apple clang|gcc|GCC|Homebrew GCC'`
+        CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'Apple clang|clang|gcc|GCC|Homebrew GCC'  | head -1`
         DEV_TOOLS[i]="$(prase_version_info ${CC_FLAVOUR} ${CC_VERSION})"
         i=$((i+1))
       fi
     fi
 
     files=""
-    files=$(find ${PWD} \( -name "Cargo.toml" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
+    files=$(find ${PWD} \( -name "Cargo.toml" -or -name "*.rs" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
 
     if [ ! -z "${files}" ]; then
       if [ -x "$(command -v cargo)" ]; then
