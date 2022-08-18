@@ -201,10 +201,18 @@ is_ssh(){
 # Checks if working tree is dirty
 parse_git_dirty() {
   ref=$(git symbolic-ref HEAD 2> /dev/null)
+  isDetached=`git branch --show-current | wc -l`
+  local endl;
+  if [ "${isDetached}" = "0" ]; then
+    endl=""
+  else
+    endl=" "
+  fi
+
   if [[ -n $(git status -s --ignore-submodules=dirty 2> /dev/null) ]]; then
     echo "${ref#refs/heads/}$ZSH_THEME_GIT_PROMPT_DIRTY"
   else
-    echo "${ref#refs/heads/}"
+    echo "${ref#refs/heads/}${endl}"
   fi
 }
 
@@ -231,4 +239,5 @@ RPS1="${return_code}]"
 RPS2="${return_code}]"
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}«%{$reset_color%}%{$fg_bold[yellow]%}"
-ZSH_THEME_GIT_PROMPT_SUFFIX=" %{$fg_bold[red]%}\ue0a0%{$fg_bold[blue]%}»%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[red]%}\ue0a0%{$fg_bold[blue]%}»%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_DIRTY=" 🌗 "
