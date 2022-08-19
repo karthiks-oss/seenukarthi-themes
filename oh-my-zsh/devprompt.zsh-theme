@@ -5,7 +5,6 @@ local return_code="%(?.%{$fg[green]%}% ✔%{$reset_color%}.%{$fg[red]%}%? ✘%{$
 my_dev_prompt_info() {
 
     local no_dev_prompt=${NO_DEV_PROMPT:-false}
-    local VER_REGEX='[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+'
 
     if [ "${no_dev_prompt}" = "true" ] || [ "${HOME}" = "${PWD}" ]; then
       return
@@ -13,10 +12,10 @@ my_dev_prompt_info() {
 
     setopt ksh_arrays
     setopt +o nomatch
-    declare -a DEV_TOOLS;
-    i=0;
-
+    local VER_REGEX='([[:digit:]]+|[[:digit:]]+\.[[:digit:]]+|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+)'
     local java_found="false" 
+    local i=0;
+    declare -a DEV_TOOLS;
 
     if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then
       DEV_TOOLS[i]="$ZSH_THEME_GIT_PROMPT_PREFIX$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
@@ -132,7 +131,12 @@ my_dev_prompt_info() {
       local cc_exe=${CC:-gcc}
       if [ -x "$(command -v ${cc_exe})" ]; then
         CC_VERSION=`${cc_exe} --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
-        CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'Apple clang|clang|gcc|GCC|Homebrew GCC'  | head -1`
+        CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'Apple clang|Homebrew GCC' | head -1`
+
+        if [ "${CC_FLAVOUR}" = "" ]; then
+          CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'clang|GCC|gcc' | head -1`
+        fi
+
         DEV_TOOLS[i]="$(prase_version_info ${CC_FLAVOUR} ${CC_VERSION})"
         i=$((i+1))
       fi
