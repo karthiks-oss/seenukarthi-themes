@@ -249,4 +249,4 @@ RPS2="${return_code}]"
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}«%{$reset_color%}%{$fg_bold[magenta]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[red]%}\ue0a0%{$fg_bold[blue]%}»%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg_bold[yellow]%}\u00b1%{$reset_color%} "
+ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg_bold[yellow]%}$(tput blink)\u00b1$(tput sgr0)%{$reset_color%} "
