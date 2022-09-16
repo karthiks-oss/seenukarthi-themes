@@ -106,6 +106,11 @@ my_dev_prompt_info() {
         DEV_TOOLS[i]="$(prase_version_info Ruby ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
+      if [ -x "$(command -v bundle)" ]; then
+        DEV_TOOLS_VERSION=`bundle -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
+        DEV_TOOLS[i]="$(prase_version_info Bundler ${DEV_TOOLS_VERSION})"
+        i=$((i+1))
+      fi
     fi
 
     files=""
@@ -242,6 +247,6 @@ PROMPT=${PROMPT}'[%{${fg_bold[$CARETCOLOR]}%}~>%{${reset_color}%} '
 RPS1="${return_code}]"
 RPS2="${return_code}]"
 
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}«%{$reset_color%}%{$fg_bold[yellow]%}"
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}«%{$reset_color%}%{$fg_bold[magenta]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[red]%}\ue0a0%{$fg_bold[blue]%}»%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_DIRTY=" 🌗 "
+ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg_bold[yellow]%}\u00b1%{$reset_color%} "
