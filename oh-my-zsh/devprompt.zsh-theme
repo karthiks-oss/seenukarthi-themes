@@ -221,7 +221,7 @@ parse_git_dirty() {
   if [[ -n $(git status -s --ignore-submodules=dirty 2> /dev/null) ]]; then
     echo "${ref#refs/heads/}$ZSH_THEME_GIT_PROMPT_DIRTY"
   else
-    echo "${ref#refs/heads/}${endl}"
+    echo "${ref#refs/heads/}${endl}$ZSH_THEME_GIT_PROMPT_CLEAN"
   fi
 }
 
@@ -250,3 +250,4 @@ RPS2="${return_code}]"
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}«%{$reset_color%}%{$fg_bold[magenta]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[red]%}\ue0a0%{$fg_bold[blue]%}»%{$reset_color%}"
 ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg_bold[yellow]%}$(tput blink)\u00b1$(tput sgr0)%{$reset_color%} "
+ZSH_THEME_GIT_PROMPT_CLEAN=" "
