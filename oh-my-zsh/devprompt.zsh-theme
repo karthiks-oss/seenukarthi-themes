@@ -117,7 +117,11 @@ my_dev_prompt_info() {
     files=$(find ${PWD} \( -name ".pyinfo" -or -name "requirements.txt" -or -name "*.py" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
 
     if [ ! -z "${files}" ]; then
-      if [ -x "$(command -v python3)" ]; then
+      if [ -x "$(command -v python)" ]; then
+          DEV_TOOLS_VERSION=`python -V | grep -Eo ${VER_REGEX} | head -1`
+          DEV_TOOLS[i]="$(prase_version_info Python ${DEV_TOOLS_VERSION})"
+          i=$((i+1))
+      elif [ -x "$(command -v python3)" ]; then
           DEV_TOOLS_VERSION=`python3 -V | grep -Eo ${VER_REGEX} | head -1`
           DEV_TOOLS[i]="$(prase_version_info Python ${DEV_TOOLS_VERSION})"
           i=$((i+1))
