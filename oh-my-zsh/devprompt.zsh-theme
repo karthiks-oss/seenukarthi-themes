@@ -18,6 +18,7 @@ my_dev_prompt_info() {
     declare -a DEV_TOOLS;
 
     if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then
+      export CUR_BR=$(parse_git_dirty)
       DEV_TOOLS[i]="$ZSH_THEME_GIT_PROMPT_PREFIX$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
       i=$((i+1))
     fi
@@ -173,7 +174,7 @@ my_dev_prompt_info() {
 
     if (( ${#DEV_TOOLS[@]} > 0 )); then
       RET=${RET}`prompt_end`
-      RET=${RET}'[🛠  '
+      RET=${RET}'[\uf425  '
       RET=${RET}${(j: :)DEV_TOOLS[@]}
       RET=${RET}']'
       echo ${RET}
@@ -183,7 +184,7 @@ my_dev_prompt_info() {
 }
 
 prase_version_info() {
-  echo "%{${fg_bold[blue]}%}«%{${fg_bold[yellow]}%}$1%{${fg_bold[blue]}%}:%{${fg_bold[red]}%}$2%{${fg_bold[blue]}%}»%{${reset_color}%}"
+  echo "%{${fg_bold[blue]}%}\uf100 %{${fg_bold[yellow]}%}$1%{${fg_bold[blue]}%}:%{${fg_bold[red]}%}$2%{${fg_bold[blue]}%} \uf101%{${reset_color}%}"
 }
 
 parse_svn_branch() {
@@ -223,7 +224,7 @@ parse_git_dirty() {
   fi
 
   if [[ -n $(git status -s --ignore-submodules=dirty 2> /dev/null) ]]; then
-    echo "${ref#refs/heads/}$ZSH_THEME_GIT_PROMPT_DIRTY"
+    echo "\e[3m\e[1m${ref#refs/heads/} $ZSH_THEME_GIT_PROMPT_DIRTY\e[0m"
   else
     echo "${ref#refs/heads/}${endl}$ZSH_THEME_GIT_PROMPT_CLEAN"
   fi
@@ -235,9 +236,9 @@ prompt_end(){
 
 get_dir_icon(){
   if [ "${HOME}" = "${PWD}" ]; then
-    echo "🏠"
+    echo "\uf015 "
   else
-    echo "📁"
+    echo "\uea83 "
   fi
 }
 
@@ -245,13 +246,13 @@ PROMPT='';
 PROMPT=${PROMPT}'$(is_ssh)'
 PROMPT=${PROMPT}'$(my_dev_prompt_info)'
 PROMPT=${PROMPT}'$(prompt_end)'
-PROMPT=${PROMPT}'%{${fg[green]}%}[$(get_dir_icon) %50<...<%~%<<]%{$reset_color%}% '
+PROMPT=${PROMPT}'%{${fg[green]}%}[%{$fg_bold[black]%}$(get_dir_icon)%{$fg_bold[green]%} %50<...<%~%<<]%{$reset_color%}% '
 PROMPT=${PROMPT}'$(prompt_end)'
-PROMPT=${PROMPT}'[%{${fg_bold[$CARETCOLOR]}%}~>%{${reset_color}%} '
+PROMPT=${PROMPT}'[%{${fg_bold[$CARETCOLOR]}%}%{${reset_color}%} '
 RPS1="${return_code}]"
 RPS2="${return_code}]"
 
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}«%{$reset_color%}%{$fg_bold[magenta]%}"
-ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[red]%}\ue0a0%{$fg_bold[blue]%}»%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}\uf100 %{$reset_color%}%{$fg_bold[magenta]%}"
+ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[red]%}\uea68%{$fg_bold[blue]%} \uf101%{$reset_color%}"
 ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg_bold[yellow]%}$(tput blink)\u00b1$(tput sgr0)%{$reset_color%} "
 ZSH_THEME_GIT_PROMPT_CLEAN=" "
