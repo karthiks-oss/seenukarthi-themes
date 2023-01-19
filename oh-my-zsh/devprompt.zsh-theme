@@ -1,6 +1,22 @@
-if [ $UID -eq 0 ]; then CARETCOLOR="red"; else CARETCOLOR="blue"; fi
+if [ $UID -eq 0 ]; then CARETCOLOR="red"; else CARETCOLOR="black"; fi
 
-local return_code="%(?.%{$fg[green]%}% ✔%{$reset_color%}.%{$fg[red]%}%? ✘%{$reset_color%})"
+local success_code=""
+local failure_code=""
+local vcs_logo=""
+local vcs_change="±"
+local chevron_left=" "
+local chevron_right=" "
+local devtools_logo="  "
+local home_logo=" "
+local folder_logo="ﱮ "
+local caret_logo=" "
+
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[blue]%}${chevron_left}%{$reset_color%}%{$fg[magenta]%}"
+ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg[magenta]%}${vcs_logo}%{$fg[blue]%}${chevron_right}%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}$(tput blink)${vcs_change}$(tput sgr0)%{$reset_color%} "
+ZSH_THEME_GIT_PROMPT_CLEAN=" "
+
+local return_code="%(?.%{$fg[green]%}% ${success_code}%{$reset_color%}.%{$fg[red]%}%? ${failure_code}%{$reset_color%})"
 
 my_dev_prompt_info() {
 
@@ -174,9 +190,9 @@ my_dev_prompt_info() {
 
     if (( ${#DEV_TOOLS[@]} > 0 )); then
       RET=${RET}`prompt_end`
-      RET=${RET}'[\uf425  '
+      RET=${RET}${devtools_logo}
       RET=${RET}${(j: :)DEV_TOOLS[@]}
-      RET=${RET}']'
+      RET=${RET}''
       echo ${RET}
     else
       return
@@ -184,7 +200,7 @@ my_dev_prompt_info() {
 }
 
 prase_version_info() {
-  echo "%{${fg_bold[blue]}%}\uf100 %{${fg_bold[yellow]}%}$1%{${fg_bold[blue]}%}:%{${fg_bold[red]}%}$2%{${fg_bold[blue]}%} \uf101%{${reset_color}%}"
+  echo "%{${fg[blue]}%}${chevron_left}%{${fg[yellow]}%}$1%{${fg[blue]}%}:%{${fg[red]}%}$2%{${fg[blue]}%}${chevron_right}%{${reset_color}%}"
 }
 
 parse_svn_branch() {
@@ -204,7 +220,7 @@ is_ssh(){
   if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
     RET="";
     RET=${RET}`prompt_end`
-    RET=${RET}"[📠 %{$fg_bold[cyan]%}%n%{$fg_bold[yellow]%}@%{$fg_bold[blue]%}%M%{${reset_color}%}"
+    RET=${RET}"[📠 %{$fg[cyan]%}%n%{$fg[yellow]%}@%{$fg[blue]%}%M%{${reset_color}%}"
     RET=${RET}']'
     echo ${RET}
   else
@@ -224,7 +240,7 @@ parse_git_dirty() {
   fi
 
   if [[ -n $(git status -s --ignore-submodules=dirty 2> /dev/null) ]]; then
-    echo "\e[3m\e[1m${ref#refs/heads/} $ZSH_THEME_GIT_PROMPT_DIRTY\e[0m"
+    echo "${ITALIC_ON}${ref#refs/heads/} $ZSH_THEME_GIT_PROMPT_DIRTY${RESET_FORMATTING}"
   else
     echo "${ref#refs/heads/}${endl}$ZSH_THEME_GIT_PROMPT_CLEAN"
   fi
@@ -236,9 +252,9 @@ prompt_end(){
 
 get_dir_icon(){
   if [ "${HOME}" = "${PWD}" ]; then
-    echo "\uf015 "
+    echo "${home_logo}"
   else
-    echo "\uea83 "
+    echo "${folder_logo}"
   fi
 }
 
@@ -246,13 +262,8 @@ PROMPT='';
 PROMPT=${PROMPT}'$(is_ssh)'
 PROMPT=${PROMPT}'$(my_dev_prompt_info)'
 PROMPT=${PROMPT}'$(prompt_end)'
-PROMPT=${PROMPT}'%{${fg[green]}%}[%{$fg_bold[black]%}$(get_dir_icon)%{$fg_bold[green]%} %50<...<%~%<<]%{$reset_color%}% '
+PROMPT=${PROMPT}'%{${fg[green]}%}%{$fg[black]%}$(get_dir_icon)%{$fg[green]%} %50<...<%~%<<%{$reset_color%}% '
 PROMPT=${PROMPT}'$(prompt_end)'
-PROMPT=${PROMPT}'[%{${fg_bold[$CARETCOLOR]}%}%{${reset_color}%} '
-RPS1="${return_code}]"
-RPS2="${return_code}]"
-
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}\uf100 %{$reset_color%}%{$fg_bold[magenta]%}"
-ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[red]%}\uea68%{$fg_bold[blue]%} \uf101%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg_bold[yellow]%}$(tput blink)\u00b1$(tput sgr0)%{$reset_color%} "
-ZSH_THEME_GIT_PROMPT_CLEAN=" "
+PROMPT=${PROMPT}'%{${fg[$CARETCOLOR]}%}${caret_logo}%{${reset_color}%} '
+RPS1="${return_code}"
+RPS2="${return_code}"
