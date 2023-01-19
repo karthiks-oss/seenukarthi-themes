@@ -1,4 +1,4 @@
-if [ $UID -eq 0 ]; then CARETCOLOR="red"; else CARETCOLOR="black"; fi
+if [ $UID -eq 0 ]; then CARETCOLOR="red"; else CARETCOLOR="reset_color"; fi
 
 local success_code=""
 local failure_code=""
@@ -263,7 +263,7 @@ PROMPT='';
 PROMPT=${PROMPT}'$(is_ssh)'
 PROMPT=${PROMPT}'$(my_dev_prompt_info)'
 PROMPT=${PROMPT}'$(prompt_end)'
-PROMPT=${PROMPT}'%{${fg[green]}%}%{$fg[black]%}$(get_dir_icon)%{$fg[green]%} %50<...<%~%<<%{$reset_color%}% '
+PROMPT=${PROMPT}'%{${fg[green]}%}%{$reset_color%}$(get_dir_icon)%{$fg[green]%} %50<...<%~%<<%{$reset_color%}% '
 PROMPT=${PROMPT}'$(prompt_end)'
 PROMPT=${PROMPT}'%{${fg[$CARETCOLOR]}%}${caret_logo}%{${reset_color}%} '
 RPS1="${return_code}"
