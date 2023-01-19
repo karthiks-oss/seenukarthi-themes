@@ -10,6 +10,7 @@ local devtools_logo="  "
 local home_logo=" "
 local folder_logo="ﱮ "
 local caret_logo=" "
+local ssh_logo="殺"
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[blue]%}${chevron_left}%{$reset_color%}%{$fg[magenta]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg[magenta]%}${vcs_logo}%{$fg[blue]%}${chevron_right}%{$reset_color%}"
@@ -220,8 +221,8 @@ is_ssh(){
   if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
     RET="";
     RET=${RET}`prompt_end`
-    RET=${RET}"[📠 %{$fg[cyan]%}%n%{$fg[yellow]%}@%{$fg[blue]%}%M%{${reset_color}%}"
-    RET=${RET}']'
+    RET=${RET}"${ssh_logo} %{$fg[cyan]%}%n%{$fg[yellow]%}@%{$fg[blue]%}%M%{${reset_color}%}"
+    RET=${RET}''
     echo ${RET}
   else
     return
