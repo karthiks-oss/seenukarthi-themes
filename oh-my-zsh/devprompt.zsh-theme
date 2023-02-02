@@ -1,9 +1,9 @@
-if [ $UID -eq 0 ]; then CARETCOLOR="red"; else CARETCOLOR="reset_color"; fi
+if [ $UID -eq 0 ]; then CARET_COLOR="red"; else CARET_COLOR="reset_color"; fi
 
 local success_code=""
 local failure_code=""
 local vcs_logo=""
-local vcs_change="±"
+local vcs_change=" "
 local chevron_left=" "
 local chevron_right=" "
 local devtools_logo="  "
@@ -15,7 +15,7 @@ local ssh_logo="殺"
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[blue]%}${chevron_left}%{$reset_color%}%{$fg[magenta]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg[magenta]%}${vcs_logo}%{$fg[blue]%}${chevron_right}%{$reset_color%}"
 ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}$(tput blink)${vcs_change}$(tput sgr0)%{$reset_color%} "
-ZSH_THEME_GIT_PROMPT_CLEAN=" "
+ZSH_THEME_GIT_PROMPT_CLEAN=""
 
 local return_code="%(?.%{$fg[green]%}% ${success_code}%{$reset_color%}.%{$fg[red]%}%? ${failure_code}%{$reset_color%})"
 
@@ -265,6 +265,6 @@ PROMPT=${PROMPT}'$(my_dev_prompt_info)'
 PROMPT=${PROMPT}'$(prompt_end)'
 PROMPT=${PROMPT}'$(get_dir_icon)%{$fg[green]%} %50<...<%~%<<%{$reset_color%}% '
 PROMPT=${PROMPT}'$(prompt_end)'
-PROMPT=${PROMPT}'%{${fg[$CARETCOLOR]}%}${caret_logo}%{${reset_color}%} '
+PROMPT=${PROMPT}'%{${fg[$CARET_COLOR]}%}${caret_logo}%{${reset_color}%} '
 RPS1="${return_code}"
 RPS2="${return_code}"
