@@ -4,13 +4,27 @@ local success_code=""
 local failure_code=""
 local vcs_logo=""
 local vcs_change=" "
-local chevron_left=" "
-local chevron_right=" "
+#local chevron_left=" "
+#local chevron_right=" "
 local devtools_logo="  "
 local home_logo=" "
 local folder_logo="ﱮ "
 local caret_logo=" "
 local ssh_logo="殺"
+
+local java_logo=""
+local mvn_logo=""
+local gradle_logo=""
+local nodejs_logo=""
+local npm_logo=" "
+local bun_logo=" "
+local py_logo=""
+local ruby_logo="󰴭"
+local bundler_logo=""
+local cargo_logo="󱣘"
+local rust_logo=""
+
+local intellij_logo=""
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[blue]%}${chevron_left}%{$reset_color%}%{$fg[magenta]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg[magenta]%}${vcs_logo}%{$fg[blue]%}${chevron_right}%{$reset_color%}"
@@ -51,11 +65,11 @@ my_dev_prompt_info() {
       java_found="true"
       if test -f "gradlew"; then
         DEV_TOOLS_VERSION=`./gradlew -version 2>&1 |awk 'NR==3{ gsub(/"/,""); print $2 }'`
-        DEV_TOOLS[i]="$(prase_version_info GradleW ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${gradle_logo}W ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       elif [ -x "$(command -v gradle)" ]; then
         DEV_TOOLS_VERSION=`gradle -version 2>&1 |awk 'NR==3{ gsub(/"/,""); print $2 }'`
-        DEV_TOOLS[i]="$(prase_version_info Gradle ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${gradle_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
     fi
@@ -65,11 +79,11 @@ my_dev_prompt_info() {
       if [ -x "$(command -v mvn)" ]
       then
         DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
-        DEV_TOOLS[i]="$(prase_version_info Maven ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${mvn_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       else [ -x "$(command -v maven)" ]
         DEV_TOOLS_VERSION=`maven -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
-        DEV_TOOLS[i]="$(prase_version_info Maven ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${mvn_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
     fi 
@@ -85,12 +99,12 @@ my_dev_prompt_info() {
     fi
 
     files=""
-    files=$(find ${PWD} \( -name "*.java" \)  -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
+    files=$(find ${PWD} \( -name "*.java" -or -name "*.jar" \)  -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
 
     if [ "${java_found}" = "true" ] || [ ! -z "${files}" ]; then
       if [ -x "$(command -v java)" ]; then
         DEV_TOOLS_VERSION=`java -version 2>&1 |awk 'NR==1{ gsub(/"/,""); print $3 }'`
-        DEV_TOOLS[i]="$(prase_version_info Java ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${java_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
     fi
@@ -101,19 +115,19 @@ my_dev_prompt_info() {
     if [ ! -z "${files}" ]; then
       if [ -x "$(command -v node)" ]; then
         DEV_TOOLS_VERSION=`node -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
-        DEV_TOOLS[i]="$(prase_version_info Node ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${nodejs_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
       
       if [ -x "$(command -v npm)" ]; then
         DEV_TOOLS_VERSION=`npm -v | grep -Eo ${VER_REGEX} | head -1`
-        DEV_TOOLS[i]="$(prase_version_info NPM ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${npm_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
 
       if [ -x "$(command -v bun)" ]; then
         DEV_TOOLS_VERSION=`bun -v | grep -Eo ${VER_REGEX} | head -1`
-        DEV_TOOLS[i]="$(prase_version_info Bun ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${bun_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
     fi
@@ -121,12 +135,12 @@ my_dev_prompt_info() {
     if [ -f "Gemfile" ]; then
       if [ -x "$(command -v ruby)" ]; then
         DEV_TOOLS_VERSION=`ruby -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
-        DEV_TOOLS[i]="$(prase_version_info Ruby ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${ruby_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
       if [ -x "$(command -v bundle)" ]; then
         DEV_TOOLS_VERSION=`bundle -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
-        DEV_TOOLS[i]="$(prase_version_info Bundler ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${bundler_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
     fi
@@ -135,13 +149,19 @@ my_dev_prompt_info() {
     files=$(find ${PWD} \( -name ".pyinfo" -or -name "requirements.txt" -or -name "*.py" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
 
     if [ ! -z "${files}" ]; then
+      if [ "$(declare -fF conda)" ]; then
+          CONDA_VER=`conda env list | grep '*'| cut -d ' ' -f 1`
+          CONDA_VER=" %{${fg[red]}%}${CONDA_VER}"
+      else
+          CONDA_VER=""
+      fi
       if [ -x "$(command -v python)" ]; then
           DEV_TOOLS_VERSION=`python -V | grep -Eo ${VER_REGEX} | head -1`
-          DEV_TOOLS[i]="$(prase_version_info Python ${DEV_TOOLS_VERSION})"
+          DEV_TOOLS[i]="$(prase_version_info ${py_logo} ${DEV_TOOLS_VERSION})${CONDA_VER}"
           i=$((i+1))
       elif [ -x "$(command -v python3)" ]; then
           DEV_TOOLS_VERSION=`python3 -V | grep -Eo ${VER_REGEX} | head -1`
-          DEV_TOOLS[i]="$(prase_version_info Python ${DEV_TOOLS_VERSION})"
+          DEV_TOOLS[i]="$(prase_version_info ${py_logo} ${DEV_TOOLS_VERSION})${CONDA_VER}"
           i=$((i+1))
       fi
     fi
@@ -175,15 +195,21 @@ my_dev_prompt_info() {
     if [ ! -z "${files}" ]; then
       if [ -x "$(command -v cargo)" ]; then
         DEV_TOOLS_VERSION=`cargo --version | grep -Eo ${VER_REGEX} | head -1`
-        DEV_TOOLS[i]="$(prase_version_info Cargo ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${cargo_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
 
       if [ -x "$(command -v rustc)" ]; then
         DEV_TOOLS_VERSION=`rustc --version | grep -Eo ${VER_REGEX} | head -1`
-        DEV_TOOLS[i]="$(prase_version_info Rust ${DEV_TOOLS_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${rust_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
+    fi
+
+    if [ -d ".idea" ]; then
+      DEV_TOOLS_VERSION=''
+      DEV_TOOLS[i]="${intellij_logo} "
+      i=$((i+1))
     fi
 
     setopt +o nomatch
@@ -201,7 +227,7 @@ my_dev_prompt_info() {
 }
 
 prase_version_info() {
-  echo "%{${fg[blue]}%}${chevron_left}%{${fg[yellow]}%}$1%{${fg[blue]}%}:%{${fg[red]}%}$2%{${fg[blue]}%}${chevron_right}%{${reset_color}%}"
+  echo "%{${fg[blue]}%}${chevron_left}%{${reset_color}%}$1%{${fg[blue]}%} %{${fg[red]}%}$2%{${fg[blue]}%}${chevron_right}%{${reset_color}%}"
 }
 
 parse_svn_branch() {
