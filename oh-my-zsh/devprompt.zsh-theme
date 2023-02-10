@@ -4,8 +4,8 @@ local success_code=""
 local failure_code=""
 local vcs_logo=""
 local vcs_change=" "
-#local chevron_left=" "
-#local chevron_right=" "
+#local chevron_left="‘"
+#local chevron_right="’"
 local devtools_logo="  "
 local home_logo=" "
 local folder_logo="ﱮ "
@@ -23,6 +23,9 @@ local ruby_logo="󰴭"
 local bundler_logo=""
 local cargo_logo="󱣘"
 local rust_logo=""
+local cmake_logo=""
+local make_logo=""
+local cc_logo=" "
 
 local intellij_logo=""
 
@@ -45,6 +48,7 @@ my_dev_prompt_info() {
     setopt +o nomatch
     local VER_REGEX='([[:digit:]]+|[[:digit:]]+\.[[:digit:]]+|[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+)'
     local java_found="false" 
+    local cc_found="false"
     local i=0;
     declare -a DEV_TOOLS;
 
@@ -56,6 +60,12 @@ my_dev_prompt_info() {
 
     if [ svn info > /dev/null 2>&1 ]; then
       DEV_TOOLS[i]="${ZSH_THEME_GIT_PROMPT_PREFIX}Rev $(parse_svn_revision) Branch $(parse_svn_branch)${ZSH_THEME_GIT_PROMPT_SUFFIX}"
+      i=$((i+1))
+    fi
+
+    if [ -d ".idea" ]; then
+      DEV_TOOLS_VERSION=''
+      DEV_TOOLS[i]="${intellij_logo}"
       i=$((i+1))
     fi
 
@@ -151,7 +161,7 @@ my_dev_prompt_info() {
     if [ ! -z "${files}" ]; then
       if [ "$(declare -fF conda)" ]; then
           CONDA_VER=`conda env list | grep '*'| cut -d ' ' -f 1`
-          CONDA_VER=" %{${fg[red]}%}${CONDA_VER}"
+          CONDA_VER=" %{${fg[red]}%}(${CONDA_VER})"
       else
           CONDA_VER=""
       fi
@@ -166,15 +176,27 @@ my_dev_prompt_info() {
       fi
     fi
 
-    files=""
-    files=$(find ${PWD} \( -name "CMakeLists.txt" -or -name "*.c" -or -name "*.h" -or -name "*.cpp" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
-
-    if [ ! -z "${files}" ]; then
+    if [ -f "CMakeLists.txt" ]; then
+      cc_found=true;
       if [ -x "$(command -v cmake)" ]; then
         CMAKE_VERSION=`cmake --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
-        DEV_TOOLS[i]="$(prase_version_info CMake ${CMAKE_VERSION})"
+        DEV_TOOLS[i]="$(prase_version_info ${cmake_logo} ${CMAKE_VERSION})"
         i=$((i+1))
       fi
+    fi
+
+    if [ -f "GNUmakefile" ] || [ -f "makefile" ] || [ -f "Makefile" ]; then
+      cc_found=true;
+      if [ -x "$(command -v make)" ]; then
+        CMAKE_VERSION=`make --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
+        DEV_TOOLS[i]="$(prase_version_info ${make_logo} ${CMAKE_VERSION})"
+        i=$((i+1))
+      fi
+    fi
+
+    files=""
+    files=$(find ${PWD} \( -name "*.c" -or -name "*.h" -or -name "*.cpp" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
+    if [ "${java_found}" = "true" ] || [ ! -z "${files}" ]; then
       local cc_exe=${CC:-gcc}
       if [ -x "$(command -v ${cc_exe})" ]; then
         CC_VERSION=`${cc_exe} --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
@@ -183,8 +205,8 @@ my_dev_prompt_info() {
         if [ "${CC_FLAVOUR}" = "" ]; then
           CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'clang|GCC|gcc' | head -1`
         fi
-
-        DEV_TOOLS[i]="$(prase_version_info ${CC_FLAVOUR} ${CC_VERSION})"
+        CC_FLAVOUR=" %{${fg[red]}%}(${CC_FLAVOUR})"
+        DEV_TOOLS[i]="$(prase_version_info ${cc_logo} ${CC_VERSION})${CC_FLAVOUR}"
         i=$((i+1))
       fi
     fi
@@ -204,12 +226,6 @@ my_dev_prompt_info() {
         DEV_TOOLS[i]="$(prase_version_info ${rust_logo} ${DEV_TOOLS_VERSION})"
         i=$((i+1))
       fi
-    fi
-
-    if [ -d ".idea" ]; then
-      DEV_TOOLS_VERSION=''
-      DEV_TOOLS[i]="${intellij_logo} "
-      i=$((i+1))
     fi
 
     setopt +o nomatch
