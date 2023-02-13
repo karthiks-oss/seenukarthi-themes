@@ -24,10 +24,14 @@ local bundler_logo=""
 local cargo_logo="󱣘"
 local rust_logo=""
 local cmake_logo=""
-local make_logo=""
+local make_logo=""
 local cc_logo=" "
 
 local intellij_logo=""
+
+local github_logo=" "
+local gitlab_logo=" "
+local bitbucket_logo=" "
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[blue]%}${chevron_left}%{$reset_color%}%{$fg[magenta]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg[magenta]%}${vcs_logo}%{$fg[blue]%}${chevron_right}%{$reset_color%}"
@@ -50,19 +54,34 @@ my_dev_prompt_info() {
     if [ "${no_dev_prompt}" = "true" ] || [ "${HOME}" = "${PWD}" ]; then
       return
     fi
-    
-    if [ -f ".devprompt" ]; then
 
-      if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then
-        export CUR_BR=$(parse_git_dirty)
-        DEV_TOOLS[i]="$ZSH_THEME_GIT_PROMPT_PREFIX$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
-        i=$((i+1))
-      fi
-    
-      if [ svn info > /dev/null 2>&1 ]; then
-        DEV_TOOLS[i]="${ZSH_THEME_GIT_PROMPT_PREFIX}Rev $(parse_svn_revision) Branch $(parse_svn_branch)${ZSH_THEME_GIT_PROMPT_SUFFIX}"
-        i=$((i+1))
-      fi
+    if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then
+      local remote=$(git remote -v | grep origin | grep fetch | grep -Eo 'github|gitlab|bitbucket')
+      case "$remote" in
+          github)
+            DEV_TOOLS[i]="${github_logo}"
+            i=$((i+1))
+            ;;
+          gitlab)
+            DEV_TOOLS[i]="${gitlab_logo}"
+            i=$((i+1))
+            ;;
+          bitbucket)
+            DEV_TOOLS[i]="${bitbucket_logo}"
+            i=$((i+1))
+            ;;
+      esac
+      export CUR_BR=$(parse_git_dirty)
+      DEV_TOOLS[i]="$ZSH_THEME_GIT_PROMPT_PREFIX$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
+      i=$((i+1))
+    fi
+  
+    if [ svn info > /dev/null 2>&1 ]; then
+      DEV_TOOLS[i]="${ZSH_THEME_GIT_PROMPT_PREFIX}Rev $(parse_svn_revision) Branch $(parse_svn_branch)${ZSH_THEME_GIT_PROMPT_SUFFIX}"
+      i=$((i+1))
+    fi
+
+    if [ -f ".devprompt" ]; then
 
       for line in "${(@f)"$(<.devprompt)"}"
       {
@@ -230,15 +249,14 @@ my_dev_prompt_info() {
         fi
 
       }
-    
-      if (( ${#DEV_TOOLS[@]} > 0 )); then
-        RET=${RET}`prompt_end`
-        RET=${RET}${devtools_logo}
-        RET=${RET}${(j: :)DEV_TOOLS[@]}
-        RET=${RET}''
-        echo ${RET}
-      fi
             
+    fi
+    if (( ${#DEV_TOOLS[@]} > 0 )); then
+      RET=${RET}`prompt_end`
+      RET=${RET}${devtools_logo}
+      RET=${RET}${(j: :)DEV_TOOLS[@]}
+      RET=${RET}''
+      echo ${RET}
     fi
     setopt +o nomatch
     RET="";
@@ -251,12 +269,15 @@ prase_version_info() {
 parse_svn_branch() {
   parse_svn_url | sed -e 's#^'"$(parse_svn_repository_root)"'##g' | egrep -o '(tags|branches)/[^/]+|trunk' | egrep -o '[^/]+$' | awk '{print ""$1"" }'
 }
+
 parse_svn_url() {
   svn info 2>/dev/null | sed -ne 's#^URL: ##p'
 }
+
 parse_svn_repository_root() {
   svn info 2>/dev/null | sed -ne 's#^Repository Root: ##p'
 }
+
 parse_svn_revision(){
   svn info 2>/dev/null | awk 'NR==7' | cut -d ' ' -f 2 cd 
 }
