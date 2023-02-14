@@ -24,19 +24,19 @@ local bundler_logo=""
 local cargo_logo="󱣘"
 local rust_logo=""
 local cmake_logo=""
-local make_logo=""
+local make_logo=""
 local cc_logo=" "
 
 local intellij_logo=""
 
-local github_logo=" "
-local gitlab_logo=" "
-local bitbucket_logo=" "
+local github_logo="%{$fg[black]%} %{${reset_color}%}"
+local gitlab_logo="%{$fg[red]%} %{${reset_color}%}"
+local bitbucket_logo="%{$fg[blue]%} %{${reset_color}%}"
 
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[blue]%}${chevron_left}%{$reset_color%}%{$fg[magenta]%}"
-ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg[magenta]%}${vcs_logo}%{$fg[blue]%}${chevron_right}%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}$(tput blink)${vcs_change}$(tput sgr0)%{$reset_color%} "
-ZSH_THEME_GIT_PROMPT_CLEAN=""
+local ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[blue]%}${chevron_left}%{$reset_color%}%{$fg[magenta]%}"
+local ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg[magenta]%}${vcs_logo}%{$fg[blue]%}${chevron_right}%{$reset_color%}"
+local ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}$(tput blink)${vcs_change}$(tput sgr0)%{$reset_color%} "
+local ZSH_THEME_GIT_PROMPT_CLEAN=""
 
 local return_code="%(?.%{$fg[green]%}% ${success_code}%{$reset_color%}.%{$fg[red]%}%? ${failure_code}%{$reset_color%})"
 
@@ -81,11 +81,11 @@ my_dev_prompt_info() {
       i=$((i+1))
     fi
 
-    if [ -f ".devprompt" ]; then
-
-      for line in "${(@f)"$(<.devprompt)"}"
-      {
-
+    local devfile=$(eval find ./$(printf "{$(echo %{1..10}q,)}" | sed 's/ /\.\.\//g')/ -maxdepth 1 -name .devprompt)
+    
+    if [ -f "${devfile}" ]; then
+      local devDir=$(dirname ${devfile})
+      while read line; do
         # JetBrains
         if [ "${line}" = "jetbrains" ] && [ -d ".idea" ]; then
           DEV_TOOLS_VERSION=''
@@ -104,10 +104,10 @@ my_dev_prompt_info() {
 
           # Gradle
           files=""
-          files=$(find ${PWD} \( -name "*.gradle" -or -name "*.gradle.kts" -or -name "gradlew" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
+          files=$(find ${devDir} \( -name "*.gradle" -or -name "*.gradle.kts" -or -name "gradlew" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
           if [ ! -z "${files}" ]; then
-            if test -f "gradlew"; then
-              DEV_TOOLS_VERSION=`./gradlew -version 2>&1 |awk 'NR==3{ gsub(/"/,""); print $2 }'`
+            if test -f "${devDir}/gradlew"; then
+              DEV_TOOLS_VERSION=`${devDir}/gradlew -version 2>&1 |awk 'NR==3{ gsub(/"/,""); print $2 }'`
               DEV_TOOLS[i]="$(prase_version_info ${gradle_logo}W ${DEV_TOOLS_VERSION})"
               i=$((i+1))
             elif [ -x "$(command -v gradle)" ]; then
@@ -118,7 +118,7 @@ my_dev_prompt_info() {
           fi
 
           # Maven
-          if [ -f "pom.xml" ]; then
+          if [ -f "${devDir}/pom.xml" ]; then
             if [ -x "$(command -v mvn)" ]
             then
               DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
@@ -132,7 +132,7 @@ my_dev_prompt_info() {
           fi
 
           # Ant
-          if [ -f "build.xml" ]; then
+          if [ -f "${devDir}/build.xml" ]; then
             java_found="true"
             if [ -x "$(command -v ant)" ]
             then
@@ -175,7 +175,7 @@ my_dev_prompt_info() {
             DEV_TOOLS[i]="$(prase_version_info ${ruby_logo} ${DEV_TOOLS_VERSION})"
             i=$((i+1))
           fi
-          if [ -f "Gemfile" ] && [ -x "$(command -v bundle)" ]; then   
+          if [ -f "${devDir}/Gemfile" ] && [ -x "$(command -v bundle)" ]; then   
             DEV_TOOLS_VERSION=`bundle -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
             DEV_TOOLS[i]="$(prase_version_info ${bundler_logo} ${DEV_TOOLS_VERSION})"
             i=$((i+1))
@@ -216,7 +216,7 @@ my_dev_prompt_info() {
             i=$((i+1))
           fi
 
-          if [ -f "CMakeLists.txt" ]; then
+          if [ -f "${devDir}/CMakeLists.txt" ]; then
             if [ -x "$(command -v cmake)" ]; then
               CMAKE_VERSION=`cmake --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
               DEV_TOOLS[i]="$(prase_version_info ${cmake_logo} ${CMAKE_VERSION})"
@@ -224,7 +224,7 @@ my_dev_prompt_info() {
             fi
           fi
 
-          if [ -f "GNUmakefile" ] || [ -f "makefile" ] || [ -f "Makefile" ]; then
+          if [ -f "${devDir}/GNUmakefile" ] || [ -f "makefile" ] || [ -f "Makefile" ]; then
             if [ -x "$(command -v make)" ]; then
               MAKE_VERSION=`make --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
               DEV_TOOLS[i]="$(prase_version_info ${make_logo} ${MAKE_VERSION})"
@@ -235,7 +235,7 @@ my_dev_prompt_info() {
 
         # Rust
         if [[ "${line}" = "rust" ]]; then
-          if [ -x "$(command -v cargo)" ]; then
+          if [ -f "${devDir}/Cargo.toml" ] || [ -x "$(command -v cargo)" ]; then
             DEV_TOOLS_VERSION=`cargo --version | grep -Eo ${VER_REGEX} | head -1`
             DEV_TOOLS[i]="$(prase_version_info ${cargo_logo} ${DEV_TOOLS_VERSION})"
             i=$((i+1))
@@ -248,7 +248,7 @@ my_dev_prompt_info() {
           fi
         fi
 
-      }
+      done < ${devfile}
             
     fi
     if (( ${#DEV_TOOLS[@]} > 0 )); then
