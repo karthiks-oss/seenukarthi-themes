@@ -28,7 +28,7 @@ local cmake_logo="%{$fg[red]%}"
 local make_logo="%{$fg[green]%}"
 local cc_logo="%{$fg[blue]%} "
 local swift_logo="%{$fg[magenta]%}"
-local asm_logo="%{$fg[blue]%} "
+local asm_logo="%{$fg[blue]%} "
 
 local intellij_logo="%{$fg[blue]%}"
 
