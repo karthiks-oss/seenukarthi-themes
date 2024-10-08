@@ -131,7 +131,13 @@ my_dev_prompt_info() {
           if [ -f "${devDir}/pom.xml" ]; then
             if [ -x "$(command -v mvn)" ]
             then
-              DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
+              MVN_FLAVOUR=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $1 }'`
+              if [[ "${MVN_FLAVOUR}" = "Apache" ]]
+              then
+                DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $3 }'`
+              else
+                DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
+              fi
               DEV_TOOLS[i]="$(prase_version_info ${mvn_logo} ${DEV_TOOLS_VERSION})"
               i=$((i+1))
             else [ -x "$(command -v maven)" ]
