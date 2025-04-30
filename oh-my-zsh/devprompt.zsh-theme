@@ -19,6 +19,7 @@ local ant_logo="%{$fg[magenta]%}"
 local nodejs_logo="%{$fg[green]%}"
 local npm_logo="%{$fg[red]%} "
 local bun_logo="%{$fg[yellow]%}󰚅"
+local deno_logo="%{$fg[black]%}󱍢"
 local py_logo="%{$fg[green]%}"
 local ruby_logo="%{$fg[red]%}󰴭"
 local bundler_logo="%{$fg[yellow]%}󰾂"
@@ -179,6 +180,15 @@ my_dev_prompt_info() {
           if [ -x "$(command -v bun)" ]; then
             DEV_TOOLS_VERSION=`bun -v | grep -Eo ${VER_REGEX} | head -1`
             DEV_TOOLS[i]="$(prase_version_info ${bun_logo} ${DEV_TOOLS_VERSION})"
+            i=$((i+1))
+          fi
+        fi
+
+        # Deno
+        if [[ "${line}" = "deno" ]]; then
+          if [ -x "$(command -v deno)" ]; then
+            DEV_TOOLS_VERSION=`deno -v | grep -Eo ${VER_REGEX} | head -1`
+            DEV_TOOLS[i]="$(prase_version_info ${deno_logo} ${DEV_TOOLS_VERSION})"
             i=$((i+1))
           fi
         fi
