@@ -97,207 +97,186 @@ my_dev_prompt_info() {
     if [ -f "${devfile}" ]; then
       local devDir=$(dirname ${devfile})
       while read line; do
-        # JetBrains
-        if [ "${line}" = "jetbrains" ] && [ -d "${devDir}/.idea" ]; then
-          DEV_TOOLS_VERSION=''
-          DEV_TOOLS[i]="${intellij_logo}"
-          i=$((i+1))
-        fi
-
-        # Java
-        if [[ "${line}" = "java" ]]; then
-          # Java
-          if [ -x "$(command -v java)" ]; then
-            DEV_TOOLS_VERSION=`java -version 2>&1 |awk 'NR==1{ gsub(/"/,""); print $3 }'`
-            DEV_TOOLS[i]="$(prase_version_info ${java_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-
-          # Gradle
-          files=""
-          files=$(find ${devDir} \( -name "*.gradle" -or -name "*.gradle.kts" -or -name "gradlew" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
-          if [ ! -z "${files}" ]; then
-            if test -f "${devDir}/gradlew"; then
-              DEV_TOOLS_VERSION=`${devDir}/gradlew -version 2>&1 |awk 'NR==3{ gsub(/"/,""); print $2 }'`
-              DEV_TOOLS[i]="$(prase_version_info ${gradle_logo} ${DEV_TOOLS_VERSION})"
-              i=$((i+1))
-            elif [ -x "$(command -v gradle)" ]; then
-              DEV_TOOLS_VERSION=`gradle -version 2>&1 |awk 'NR==3{ gsub(/"/,""); print $2 }'`
-              DEV_TOOLS[i]="$(prase_version_info ${gradle_logo} ${DEV_TOOLS_VERSION})"
+        case "${line}" in
+          "jetbrains")
+            if [ -d "${devDir}/.idea" ]; then
+              DEV_TOOLS_VERSION=''
+              DEV_TOOLS[i]="${intellij_logo}"
               i=$((i+1))
             fi
-          fi
+            ;;
+          "java")
+            # Java
+            if [ -x "$(command -v java)" ]; then
+              DEV_TOOLS_VERSION=`java -version 2>&1 |awk 'NR==1{ gsub(/"/,""); print $3 }'`
+              DEV_TOOLS[i]="$(prase_version_info ${java_logo} ${DEV_TOOLS_VERSION})"
+              i=$((i+1))
+            fi
 
-          # Maven
-          if [ -f "${devDir}/pom.xml" ]; then
-            if [ -x "$(command -v mvn)" ]
-            then
-              MVN_FLAVOUR=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $1 }'`
-              if [[ "${MVN_FLAVOUR}" = "Apache" ]]
-              then
-                DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $3 }'`
-              else
-                DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
+            # Gradle
+            files=""
+            files=$(find ${devDir} \( -name "*.gradle" -or -name "*.gradle.kts" -or -name "gradlew" \) -maxdepth 1 | awk 'NR==1{ gsub(/"/,""); print $1 }') 2> /dev/null
+            if [ ! -z "${files}" ]; then
+              if test -f "${devDir}/gradlew"; then
+                DEV_TOOLS_VERSION=`${devDir}/gradlew -version 2>&1 |awk 'NR==3{ gsub(/"/,""); print $2 }'`
+                DEV_TOOLS[i]="$(prase_version_info ${gradle_logo} ${DEV_TOOLS_VERSION})"
+                i=$((i+1))
+              elif [ -x "$(command -v gradle)" ]; then
+                DEV_TOOLS_VERSION=`gradle -version 2>&1 |awk 'NR==3{ gsub(/"/,""); print $2 }'`
+                DEV_TOOLS[i]="$(prase_version_info ${gradle_logo} ${DEV_TOOLS_VERSION})"
+                i=$((i+1))
               fi
-              DEV_TOOLS[i]="$(prase_version_info ${mvn_logo} ${DEV_TOOLS_VERSION})"
-              i=$((i+1))
-            else [ -x "$(command -v maven)" ]
-              DEV_TOOLS_VERSION=`maven -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
-              DEV_TOOLS[i]="$(prase_version_info ${mvn_logo} ${DEV_TOOLS_VERSION})"
+            fi
+
+            # Maven
+            if [ -f "${devDir}/pom.xml" ]; then
+              if [ -x "$(command -v mvn)" ]; then
+                MVN_FLAVOUR=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $1 }'`
+                if [[ "${MVN_FLAVOUR}" = "Apache" ]]; then
+                  DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $3 }'`
+                else
+                  DEV_TOOLS_VERSION=`mvn -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
+                fi
+                DEV_TOOLS[i]="$(prase_version_info ${mvn_logo} ${DEV_TOOLS_VERSION})"
+                i=$((i+1))
+              elif [ -x "$(command -v maven)" ]; then
+                DEV_TOOLS_VERSION=`maven -v 2>&1 | awk 'NR==1{ gsub(/"/,""); print $4 }'`
+                DEV_TOOLS[i]="$(prase_version_info ${mvn_logo} ${DEV_TOOLS_VERSION})"
+                i=$((i+1))
+              fi
+            fi
+
+            # Ant
+            if [ -f "${devDir}/build.xml" ]; then
+              java_found="true"
+              if [ -x "$(command -v ant)" ]; then
+                DEV_TOOLS_VERSION=`ant -version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
+                DEV_TOOLS[i]="$(prase_version_info ${ant_logo} ${DEV_TOOLS_VERSION})"
+                i=$((i+1))
+              fi
+            fi
+            ;;
+          "nodejs")
+            if [ -x "$(command -v node)" ]; then
+              DEV_TOOLS_VERSION=`node -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${nodejs_logo} ${DEV_TOOLS_VERSION})"
               i=$((i+1))
             fi
-          fi
-
-          # Ant
-          if [ -f "${devDir}/build.xml" ]; then
-            java_found="true"
-            if [ -x "$(command -v ant)" ]
-            then
-              DEV_TOOLS_VERSION=`ant -version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
-              DEV_TOOLS[i]="$(prase_version_info ${ant_logo} ${DEV_TOOLS_VERSION})"
+            
+            if [ -x "$(command -v npm)" ]; then
+              DEV_TOOLS_VERSION=`npm -v | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${npm_logo} ${DEV_TOOLS_VERSION})"
               i=$((i+1))
             fi
-          fi
-        fi
-        
-        # NodeJS
-        if [[ "${line}" = "nodejs" ]]; then
-          if [ -x "$(command -v node)" ]; then
-            DEV_TOOLS_VERSION=`node -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${nodejs_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-          
-          if [ -x "$(command -v npm)" ]; then
-            DEV_TOOLS_VERSION=`npm -v | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${npm_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-        fi
-
-        # Bun
-        if [[ "${line}" = "bun" ]]; then
-          if [ -x "$(command -v bun)" ]; then
-            DEV_TOOLS_VERSION=`bun -v | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${bun_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-        fi
-
-        # Deno
-        if [[ "${line}" = "deno" ]]; then
-          if [ -x "$(command -v deno)" ]; then
-            DEV_TOOLS_VERSION=`deno -v | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${deno_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-        fi
-
-        # Ruby
-        if [[ "${line}" = "ruby" ]]; then
-          if [ -x "$(command -v ruby)" ]; then
-            DEV_TOOLS_VERSION=`ruby -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${ruby_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-          if [ -f "${devDir}/Gemfile" ] && [ -x "$(command -v bundle)" ]; then   
-            DEV_TOOLS_VERSION=`bundle -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${bundler_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-        fi
-
-        # Python
-        if [[ "${line}" = "python" ]]; then
-          if [ "$(declare -fF conda)" ]; then
+            ;;
+          "bun")
+            if [ -x "$(command -v bun)" ]; then
+              DEV_TOOLS_VERSION=`bun -v | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${bun_logo} ${DEV_TOOLS_VERSION})"
+              i=$((i+1))
+            fi
+            ;;
+          "deno")
+            if [ -x "$(command -v deno)" ]; then
+              DEV_TOOLS_VERSION=`deno -v | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${deno_logo} ${DEV_TOOLS_VERSION})"
+              i=$((i+1))
+            fi
+            ;;
+          "ruby")
+            if [ -x "$(command -v ruby)" ]; then
+              DEV_TOOLS_VERSION=`ruby -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${ruby_logo} ${DEV_TOOLS_VERSION})"
+              i=$((i+1))
+            fi
+            if [ -f "${devDir}/Gemfile" ] && [ -x "$(command -v bundle)" ]; then   
+              DEV_TOOLS_VERSION=`bundle -v 2>&1 | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${bundler_logo} ${DEV_TOOLS_VERSION})"
+              i=$((i+1))
+            fi
+            ;;
+          "python")
+            if [ "$(declare -fF conda)" ]; then
               CONDA_VER=`conda env list | grep '*'| cut -d ' ' -f 1`
               CONDA_VER=" (${CONDA_VER})"
-          else
+            else
               CONDA_VER=""
-          fi
-          if [ -x "$(command -v python)" ]; then
+            fi
+            if [ -x "$(command -v python)" ]; then
               DEV_TOOLS_VERSION=`python -V | grep -Eo ${VER_REGEX} | head -1`
               DEV_TOOLS[i]="$(prase_version_info ${py_logo} ${DEV_TOOLS_VERSION}${CONDA_VER})"
               i=$((i+1))
-          elif [ -x "$(command -v python3)" ]; then
+            elif [ -x "$(command -v python3)" ]; then
               DEV_TOOLS_VERSION=`python3 -V | grep -Eo ${VER_REGEX} | head -1`
               DEV_TOOLS[i]="$(prase_version_info ${py_logo} ${DEV_TOOLS_VERSION}${CONDA_VER})"
               i=$((i+1))
-          fi
-        fi
-        
-        # C/CPP
-        if [[ "${line}" = "cc" ]]; then
-          local cc_exe=${CC:-gcc}
-          if [ -x "$(command -v ${cc_exe})" ]; then
-            CC_VERSION=`${cc_exe} --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
-            CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'Apple clang|Homebrew GCC' | head -1`
-
-            if [ "${CC_FLAVOUR}" = "" ]; then
-              CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'clang|GCC|gcc' | head -1`
             fi
-            CC_FLAVOUR=" (${CC_FLAVOUR})"
-            DEV_TOOLS[i]="$(prase_version_info ${cc_logo} ${CC_VERSION}${CC_FLAVOUR})"
-            i=$((i+1))
-          fi
+            ;;
+          "cc")
+            local cc_exe=${CC:-gcc}
+            if [ -x "$(command -v ${cc_exe})" ]; then
+              CC_VERSION=`${cc_exe} --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
+              CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'Apple clang|Homebrew GCC' | head -1`
 
-          if [ -f "${devDir}/CMakeLists.txt" ]; then
-            if [ -x "$(command -v cmake)" ]; then
-              CMAKE_VERSION=`cmake --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
-              DEV_TOOLS[i]="$(prase_version_info ${cmake_logo} ${CMAKE_VERSION})"
+              if [ "${CC_FLAVOUR}" = "" ]; then
+                CC_FLAVOUR=`${cc_exe} --version | awk 'NR==1' | grep -Eo 'clang|GCC|gcc' | head -1`
+              fi
+              CC_FLAVOUR=" (${CC_FLAVOUR})"
+              DEV_TOOLS[i]="$(prase_version_info ${cc_logo} ${CC_VERSION}${CC_FLAVOUR})"
               i=$((i+1))
             fi
-          fi
 
-          if [ -f "${devDir}/GNUmakefile" ] || [ -f "${devDir}/makefile" ] || [ -f "${devDir}/Makefile" ]; then
-            if [ -x "$(command -v make)" ]; then
-              MAKE_VERSION=`make --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
-              DEV_TOOLS[i]="$(prase_version_info ${make_logo} ${MAKE_VERSION})"
+            if [ -f "${devDir}/CMakeLists.txt" ]; then
+              if [ -x "$(command -v cmake)" ]; then
+                CMAKE_VERSION=`cmake --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
+                DEV_TOOLS[i]="$(prase_version_info ${cmake_logo} ${CMAKE_VERSION})"
+                i=$((i+1))
+              fi
+            fi
+
+            if [ -f "${devDir}/GNUmakefile" ] || [ -f "${devDir}/makefile" ] || [ -f "${devDir}/Makefile" ]; then
+              if [ -x "$(command -v make)" ]; then
+                MAKE_VERSION=`make --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
+                DEV_TOOLS[i]="$(prase_version_info ${make_logo} ${MAKE_VERSION})"
+                i=$((i+1))
+              fi
+            fi
+            ;;
+          "asm")
+            if [ -x "$(command -v nasm)" ]; then
+              DEV_TOOLS_VERSION=`nasm --version | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${asm_logo} ${DEV_TOOLS_VERSION})"
               i=$((i+1))
             fi
-          fi
-        fi
-
-        # ASM
-        if [[ "${line}" = "asm" ]]; then
-          if [ -x "$(command -v nasm)" ]; then
-            DEV_TOOLS_VERSION=`nasm --version | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${asm_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-          if [ -f "${devDir}/GNUmakefile" ] || [ -f "${devDir}/makefile" ] || [ -f "${devDir}/Makefile" ]; then
-            if [ -x "$(command -v make)" ]; then
-              MAKE_VERSION=`make --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
-              DEV_TOOLS[i]="$(prase_version_info ${make_logo} ${MAKE_VERSION})"
+            if [ -f "${devDir}/GNUmakefile" ] || [ -f "${devDir}/makefile" ] || [ -f "${devDir}/Makefile" ]; then
+              if [ -x "$(command -v make)" ]; then
+                MAKE_VERSION=`make --version | awk 'NR==1' | grep -Eo ${VER_REGEX} | head -1`
+                DEV_TOOLS[i]="$(prase_version_info ${make_logo} ${MAKE_VERSION})"
+                i=$((i+1))
+              fi
+            fi
+            ;;
+          "rust")
+            if [ -f "${devDir}/Cargo.toml" ] || [ -x "$(command -v cargo)" ]; then
+              DEV_TOOLS_VERSION=`cargo --version | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${cargo_logo} ${DEV_TOOLS_VERSION})"
               i=$((i+1))
             fi
-          fi
-        fi
 
-        # Rust
-        if [[ "${line}" = "rust" ]]; then
-          if [ -f "${devDir}/Cargo.toml" ] || [ -x "$(command -v cargo)" ]; then
-            DEV_TOOLS_VERSION=`cargo --version | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${cargo_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-
-          if [ -x "$(command -v rustc)" ]; then
-            DEV_TOOLS_VERSION=`rustc --version | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${rust_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-        fi
-
-        # Swift
-        if [[ "${line}" = "swift" ]]; then
-          if [ -f "${devDir}/Package.swift" ] || [ -x "$(command -v swift)" ]; then
-            DEV_TOOLS_VERSION=`swift --version | grep -Eo ${VER_REGEX} | head -1`
-            DEV_TOOLS[i]="$(prase_version_info ${swift_logo} ${DEV_TOOLS_VERSION})"
-            i=$((i+1))
-          fi
-        fi
-
+            if [ -x "$(command -v rustc)" ]; then
+              DEV_TOOLS_VERSION=`rustc --version | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${rust_logo} ${DEV_TOOLS_VERSION})"
+              i=$((i+1))
+            fi
+            ;;
+          "swift")
+            if [ -f "${devDir}/Package.swift" ] || [ -x "$(command -v swift)" ]; then
+              DEV_TOOLS_VERSION=`swift --version | grep -Eo ${VER_REGEX} | head -1`
+              DEV_TOOLS[i]="$(prase_version_info ${swift_logo} ${DEV_TOOLS_VERSION})"
+              i=$((i+1))
+            fi
+            ;;
+        esac
       done < ${devfile}
             
     fi
