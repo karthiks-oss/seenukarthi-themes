@@ -3,7 +3,7 @@ if [ $UID -eq 0 ]; then CARET_COLOR="red"; else CARET_COLOR="reset_color"; fi
 local success_code=""
 local failure_code=""
 local vcs_logo=""
-local vcs_change=" "
+local vcs_change=" "
 local chevron_left=""
 local chevron_right=""
 local devtools_logo="  "
@@ -13,25 +13,25 @@ local caret_logo=" "
 local ssh_logo="󱠾 "
 
 local java_logo="%{$fg[red]%}"
-local mvn_logo="%{$fg[red]%}"
+local mvn_logo="%{$fg[red]%}"
 local gradle_logo="%{$fg[green]%}"
 local ant_logo="%{$fg[magenta]%}"
 local nodejs_logo="%{$fg[green]%}"
 local npm_logo="%{$fg[red]%} "
-local bun_logo="%{$fg[yellow]%}󰚅"
+local bun_logo="%{$fg[yellow]%}"
 local deno_logo="%{$fg[black]%}󱍢"
 local py_logo="%{$fg[green]%}"
 local ruby_logo="%{$fg[red]%}󰴭"
 local bundler_logo="%{$fg[yellow]%}󰾂"
 local cargo_logo="%{$fg[yellow]%}󱣘"
 local rust_logo="%{$fg[red]%}"
-local cmake_logo="%{$fg[red]%}"
+local cmake_logo="%{$fg[red]%}"
 local make_logo="%{$fg[green]%}"
 local cc_logo="%{$fg[blue]%} "
 local swift_logo="%{$fg[magenta]%}"
 local asm_logo="%{$fg[blue]%} "
 
-local intellij_logo="%{$fg[blue]%}"
+local intellij_logo="%{$fg[blue]%}"
 
 local seperator=" "
 
@@ -108,7 +108,9 @@ my_dev_prompt_info() {
           "java")
             # Java
             if [ -x "$(command -v java)" ]; then
-              DEV_TOOLS_VERSION=`java -version 2>&1 |awk 'NR==1{ gsub(/"/,""); print $3 }'`
+              JAVA_VERSION_VERSION=`java -version 2>&1 |awk 'NR==1{ gsub(/"/,""); print $3 }'`
+              JAVA_VENDOR=`java -XshowSettings:properties -version 2>&1 | grep -m1 "java.vendor" | cut -d'=' -f2 | xargs`
+              DEV_TOOLS_VERSION="${JAVA_VERSION_VERSION} (${JAVA_VENDOR})"
               DEV_TOOLS[i]="$(prase_version_info ${java_logo} ${DEV_TOOLS_VERSION})"
               i=$((i+1))
             fi
