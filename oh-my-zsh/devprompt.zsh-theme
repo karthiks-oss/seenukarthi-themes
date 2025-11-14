@@ -39,6 +39,7 @@ local github_logo="%{$fg[white]%} %{${reset_color}%}"
 local gitlab_logo="%{$fg[red]%} %{${reset_color}%}"
 local bitbucket_logo="%{$fg[blue]%} %{${reset_color}%}"
 local space_logo="%{$fg[green]%} %{${reset_color}%}"
+local helix_logo="%{$fg[green]%}%{${reset_color}%}"
 
 local ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[blue]%}${chevron_left}%{$reset_color%}%{$fg[magenta]%}"
 local ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg[magenta]%}${vcs_logo}%{$fg[blue]%}${chevron_right}%{$reset_color%}"
@@ -63,7 +64,7 @@ my_dev_prompt_info() {
     fi
 
     if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then
-      local remote=$(git remote -v | grep origin | grep "(fetch)" | grep -Eo 'github|gitlab|bitbucket|jetbrains'  | head -1)
+      local remote=$(git remote -v | grep origin | grep "(fetch)" | grep -Eo 'github|gitlab|bitbucket|jetbrains|helixteamhub'  | head -1)
       case "$remote" in
           "github")
             DEV_TOOLS[i]="${github_logo}"
@@ -79,6 +80,10 @@ my_dev_prompt_info() {
             ;;
           "jetbrains")
             DEV_TOOLS[i]="${space_logo}"
+            i=$((i+1))
+            ;;
+          "helixteamhub")
+            DEV_TOOLS[i]="${helix_logo}"
             i=$((i+1))
             ;;
       esac
